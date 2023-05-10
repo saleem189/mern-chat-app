@@ -8,6 +8,10 @@
     "mongoose": "^7.1.0",
     "passport": "^0.6.0"
   },
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  
   "devDependencies": {
     "nodemon": "^2.0.22"
   }
