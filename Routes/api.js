@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const LoginValidator = require("../Validations/LoginValidator");
+const RegisterValidator = require("../Validations/RegisterValidator");
 
 router.post("/login", (req, res) => {
 
@@ -14,7 +15,14 @@ router.post("/login", (req, res) => {
         let password = req.body.password;
         return res.status(200).json({success:true});
     }
-    // return res.status(404).json({ success: false, message: "Invalid Credentials" });
+});
+
+router.post('/register', (req, res) => {
+    const { errors, isValid } = RegisterValidator(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
+    return res.status(200).json({success:true});
 });
 
 module.exports = router;
