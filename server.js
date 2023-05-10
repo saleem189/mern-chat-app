@@ -4,7 +4,9 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 const cors = require('cors');
 const db = require("./configurations/keys").mongoURI;
-// const users = require("./routes/api/users");
+const morgan = require('morgan');
+const api_routes = require("./Routes/api");
+
 
 const app = express();
 
@@ -14,7 +16,9 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 app.use(cors());
+app.use(morgan('dev'));
 
+app.use('/api/users', api_routes);
 // DB Config
 
 // Connect to MongoDB
