@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const LoginValidator = require("../Validations/LoginValidator");
 const RegisterValidator = require("../Validations/RegisterValidator");
+const {checkUser, loginUser} = require("../Controllers/UserController");
 
 router.post("/login", (req, res) => {
 
@@ -11,9 +12,8 @@ router.post("/login", (req, res) => {
     if (!isValid) {
         return res.status(400).json(errors);
     }else{
-        let email = req.body.email;
-        let password = req.body.password;
-        return res.status(200).json({success:true});
+        // return res.status(200).json({success:true});
+        return loginUser({email:req.body.email , password: req.body.password}, res);
     }
 });
 
@@ -21,8 +21,10 @@ router.post('/register', (req, res) => {
     const { errors, isValid } = RegisterValidator(req.body);
     if (!isValid) {
         return res.status(400).json(errors);
+    }else{
+        return checkUser({name: req.body.name, email: req.body.email, password: req.body.password}, res);
     }
-    return res.status(200).json({success:true});
+    // return res.status(200).json({success:true});
 });
 
 module.exports = router;
