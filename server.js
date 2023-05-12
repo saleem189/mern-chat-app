@@ -32,6 +32,11 @@ mongoose
 
 // Passport middleware
 app.use(passport.initialize());
+const errorLogger = (request, response, next) => {
+  console.log('Logged');
+  next()
+}
+app.use(errorLogger);
 
 // Passport config
 // require("./config/passport")(passport);
