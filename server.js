@@ -5,7 +5,7 @@ const passport = require("passport");
 const cors = require('cors');
 const db = require("./configurations/keys").mongoURI;
 const morgan = require('morgan');
-const api_routes = require("./Routes/api");
+const api_routes = require("./Routes/auth_routes");
 
 
 const app = express();
