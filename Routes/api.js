@@ -15,7 +15,7 @@ const logger = require("../Middlewares/auth_middleware");
  * if you want to show error logger middeware then
  * router.post("/login", authLimiter, logger, (req, res) => {
  */
-router.post("/login", authLimiter, (req, res) => {
+router.post("/login", authLimiter,logger, (req, res) => {
     // Validating the data from the form which is coming from the client
     const { errors, isValid } = LoginValidator(req.body);
 
