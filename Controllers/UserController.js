@@ -3,6 +3,7 @@ const User = require("../Models/User");
 const jsonWebToken = require("jsonwebtoken");
 const jsonWebTokenSecret = require("../configurations/keys").jsonWebTokenSecret;
 const bcrypt = require("bcryptjs");
+const {generateJsonWebToken} = require("../configurations/jsonWebToken");
 
 
 const checkUser = ({email: email, password: password , name: name}, res) =>{
@@ -43,18 +44,18 @@ const createUser = ({name: name, email: email, password: password}, res) =>{
         });
 }
 
-const generateJsonWebToken = ({user_id, user_name, user_email}, res) => {
-    const payload = {
-        id: user_id,
-        name: user_name,
-        email:user_email
-    }
-    jsonWebToken.sign(payload ,jsonWebTokenSecret,{ expiresIn: '1h' }, (err, token) => {
-        (err) ? res.status(500).json({err: err}) : res.status(200).json({
-            status:true,
-            token: "Bearer " + token
-        });
-    })
-}
+// const generateJsonWebToken = ({user_id, user_name, user_email}, res) => {
+//     const payload = {
+//         id: user_id,
+//         name: user_name,
+//         email:user_email
+//     }
+//     jsonWebToken.sign(payload ,jsonWebTokenSecret,{ expiresIn: '10m' }, (err, token) => {
+//         (err) ? res.status(500).json({err: err}) : res.status(200).json({
+//             status:true,
+//             token: "Bearer " + token
+//         });
+//     })
+// }
 
 module.exports = {checkUser, loginUser};

@@ -41,15 +41,15 @@ router.post('/logout',passport.authenticate('jwt', { session: false }), (req, re
       if (err) { 
         return next(err);
       }
-      req.session.destroy(); // Destroy the session
-      res.status(200).json({
+      return res.status(200).json({
           status: true,
           message: 'Successfully logged out',
           cookie: req.cookies,
-          session:req.sessionID
+          session:req.sessionID,
+          passport:req.user
       });
     });
-  });
+});
 
 // router.get('/me', isAuthenticated, (req, res) => {
 //     return res.status(200).json({status:true, user:req.user});

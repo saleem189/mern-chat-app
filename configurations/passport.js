@@ -21,4 +21,7 @@ module.exports = passport => {
         .catch(err => console.log(err));
     })
   );
+
+  passport.serializeUser( (userObj, done) => {    done(null, userObj)});
+  passport.deserializeUser((userObj, done) => {      done (null, userObj )});
 };
