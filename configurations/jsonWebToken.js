@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
-const redis = require('redis');
-const { JWT_SECRET_KEY, REFRESH_TOKEN_EXPIRATION_TIME, ACCESS_TOKEN_EXPIRATION_TIME } = require('./constants');
-const redisClient = redis.createClient();
+const { JWT_SECRET_KEY, REFRESH_TOKEN_EXPIRATION_TIME, ACCESS_TOKEN_EXPIRATION_TIME} = require('./constants');
+const redisClient = require('./redis');
 
 /**
  * Generate JSON Web Token for user authentication
@@ -16,15 +15,17 @@ const generateJsonWebToken = ({user_id, user_name, user_email}, res) => {
         name: user_name,
         email:user_email
     }
+  const refreshToken = generateRefreshToken({user_id:user_id, user_name:user_name, user_email:user_email});  
     // sign the payload with JSON Web Token Secret, set expiration to 10 minutes
     jwt.sign(payload ,JWT_SECRET_KEY,{ expiresIn: ACCESS_TOKEN_EXPIRATION_TIME }, (err, token) => {
         // if there is an error, send 500 status with error object
         if (err) {
-            res.status(500).json({err: err});
+            return res.status(500).json({status:false, message: err.message});
         } else {
             // send 200 status with token in Bearer format
             res.status(200).json({
                 status:true,
+                refresh_token: refreshToken,
                 token: "Bearer " + token
             });
         }
@@ -38,7 +39,7 @@ const generateJsonWebToken = ({user_id, user_name, user_email}, res) => {
  * @returns {string} - The generated refresh token
  */
 const generateRefreshToken = ({user_id, user_name, user_email}) => {
-    
+    // create payload for JWT containing user_id, user_name, user_email
     const payload = {
         id: user_id,
         name: user_name,
@@ -48,10 +49,31 @@ const generateRefreshToken = ({user_id, user_name, user_email}) => {
     // Generate the refresh token using the user object, JWT secret key, and expiration time
     const refreshToken = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: REFRESH_TOKEN_EXPIRATION_TIME });
   
+    redisClient.connect();
     // Store the refresh token in Redis using the user ID as the key
-    redisClient.set(`refresh_token_${user.id}`, refreshToken);
-  
+    redisClient.set(`refresh_token_${user_id}`, refreshToken);
     // Return the generated refresh token
     return refreshToken;
 }
-module.exports = {generateJsonWebToken, generateRefreshToken};
+
+
+/**
+* Verifies a JSON Web Token (JWT) using a secret key and returns the decoded token.
+* @param {string} token - The JWT to verify.
+* @returns {Object} - The decoded token.
+*/
+const verifyToken = (token, res) => {
+    // Verify the JWT with the secret key
+    const decoded = jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
+        // If there's an error, return an error response
+        if (err) {
+          return res.status(401).json({ status:false, message: err.message });
+        }
+        // If the JWT is valid, return the decoded token
+        return decoded;
+    });
+    
+    return decoded;
+}
+
+module.exports = {generateJsonWebToken, generateRefreshToken, verifyToken};

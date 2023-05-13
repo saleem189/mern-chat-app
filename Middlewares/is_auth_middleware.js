@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-
+const {verifyToken} = require('../configurations/jsonWebToken');
 // Secret key for JWTs
 const secretKey = require('../configurations/keys').jsonWebTokenSecret;
 
@@ -23,13 +23,10 @@ const isAuthenticated = (req, res, next) => {
   }
 
   // Verify the JWT
-  jwt.verify(token, secretKey, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ status:false, message: 'Invalid JWT Or Expired JWT' });
-    }
-    req.user = decoded;
+    req.user = verifyToken(token,res);
+    console.log(req.user);
     next();
-  });  
+  
 };
 
 module.exports = isAuthenticated;

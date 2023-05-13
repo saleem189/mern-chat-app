@@ -51,13 +51,13 @@ router.post('/logout',passport.authenticate('jwt', { session: false }), (req, re
     });
 });
 
-// router.get('/me', isAuthenticated, (req, res) => {
-//     return res.status(200).json({status:true, user:req.user});
-// })
+router.get('/me', isAuthenticated, (req, res) => {
+    return res.status(200).json({status:true, user:req.user});
+})
 
-router.get('/me', passport.authenticate('jwt', { session: false }),(req, res)=>{
-        res.status(200).json({status:true, user:req.user});
-    }
-);
+// router.get('/me', passport.authenticate('jwt', { session: false }),(req, res)=>{
+//         res.status(200).json({status:true, user:req.user});
+//     }
+// );
 
 module.exports = router;

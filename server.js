@@ -7,8 +7,6 @@ const cors = require('cors');
 const db = require("./configurations/keys").mongoURI;
 const morgan = require('morgan');
 const api_routes = require("./Routes/auth_routes");
-const cookieParser = require('cookie-parser');
-
 
 const app = express();
 
@@ -26,7 +24,6 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cookieParser());
 
 // Passport config
 require("./configurations/passport")(passport);
