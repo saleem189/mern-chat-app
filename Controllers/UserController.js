@@ -19,7 +19,7 @@ const loginUser = ({email: email, password: password}, res) =>{
 
 const comparePassword = (password, hash, user, res) => {
     bcrypt.compare(password, hash).then(isMatch => {
-        isMatch ? generateJsonWebToken({user_id: user._id, user_name: user.name}, res) : res.status(400).json({passwordincorrect: "Password incorrect"});
+        isMatch ? generateJsonWebToken({user_id: user._id, user_name: user.name, user_email: user.email}, res) : res.status(400).json({passwordincorrect: "Password incorrect"});
     });
 }
 
@@ -43,10 +43,11 @@ const createUser = ({name: name, email: email, password: password}, res) =>{
         });
 }
 
-const generateJsonWebToken = ({user_id, user_name}, res) => {
+const generateJsonWebToken = ({user_id, user_name, user_email}, res) => {
     const payload = {
         id: user_id,
         name: user_name,
+        email:user_email
     }
     jsonWebToken.sign(payload ,jsonWebTokenSecret,{ expiresIn: '1h' }, (err, token) => {
         (err) ? res.status(500).json({err: err}) : res.status(200).json({
