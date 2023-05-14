@@ -16,7 +16,7 @@ const generateJsonWebToken = ({user_id, user_name, user_email}, res) => {
         email:user_email
     }
   const refreshToken = generateRefreshToken({user_id:user_id, user_name:user_name, user_email:user_email});  
-    // sign the payload with JSON Web Token Secret, set expiration to 10 minutes
+    // sign the payload with JSON Web Token Secret, and expiration time
     jwt.sign(payload ,JWT_SECRET_KEY,{ expiresIn: ACCESS_TOKEN_EXPIRATION_TIME }, (err, token) => {
         // if there is an error, send 500 status with error message
         if (err) {
