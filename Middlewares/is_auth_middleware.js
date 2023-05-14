@@ -1,8 +1,5 @@
 const jwt = require('jsonwebtoken');
 const {verifyToken} = require('../configurations/jsonWebToken');
-// Secret key for JWTs
-const secretKey = require('../configurations/keys').jsonWebTokenSecret;
-
 /**
  * Middleware function to check if user is authenticated
  * @param {Object} req - The request object
@@ -24,7 +21,6 @@ const isAuthenticated = (req, res, next) => {
 
   // Verify the JWT
     req.user = verifyToken(token,res);
-    console.log(req.user);
     next();
   
 };
