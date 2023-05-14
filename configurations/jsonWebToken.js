@@ -23,10 +23,10 @@ const generateJsonWebToken = ({user_id, user_name, user_email}, res) => {
             return res.status(500).json({status:false, message: err.message});
         } else {
             // send 200 status with token in Bearer format
-            res.status(200).json({
-                status:true,
-                refresh_token: refreshToken,
-                token: "Bearer " + token
+            return res.status(200).json({
+                    status:true,
+                    refresh_token: refreshToken,
+                    token: "Bearer " + token
             });
         }
     })
@@ -49,7 +49,6 @@ const generateRefreshToken = ({user_id, user_name, user_email}) => {
     // Generate the refresh token using the user object, JWT secret key, and expiration time
     const refreshToken = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: REFRESH_TOKEN_EXPIRATION_TIME });
   
-    redisClient.connect();
     // Store the refresh token in Redis using the user ID as the key
     redisClient.set(`refresh_token_${user_id}`, refreshToken);
     // Return the generated refresh token

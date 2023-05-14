@@ -1,7 +1,11 @@
 const mongoose = require("mongoose");
+
+// Get the Mongoose Schema class
 const Schema = mongoose.Schema;
 
-// Create Schema
+/**
+ * Mongoose schema for a user model.
+ */
 const UserSchema = new Schema({
   name: {
     type: String,
@@ -15,7 +19,13 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
-},{timestamps: true});
+}, { 
+  // Add timestamps to the schema
+  timestamps: true
+});
 
+// Create a Mongoose model from the schema
 const User = mongoose.model("users", UserSchema);
+
+// Export the model for use in other parts of the application
 module.exports = User;

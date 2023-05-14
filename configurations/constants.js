@@ -1,3 +1,8 @@
+/**
+ * Constants used in application and getting assigned from environment.
+ * and if not present, default values are used.
+ */
+
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'secret';
 const ACCESS_TOKEN_EXPIRATION_TIME = process.env.ACCESS_TOKEN_EXPIRATION_TIME || '1m';
 const REFRESH_TOKEN_EXPIRATION_TIME = process.env.REFRESH_TOKEN_EXPIRATION_TIME || '1d';
