@@ -8,7 +8,7 @@ const morgan = require('morgan');
 require('dotenv').config()
 const api_routes = require("./Routes/auth_routes");
 const { MONGO_URI, SERVER_PORT } = require("./configurations/constants");
-const redisClient = require("./configurations/redis");
+const redisClient = require("./configurations/redis").RedisClient;
 const app = express();
 
 // Bodyparser middleware

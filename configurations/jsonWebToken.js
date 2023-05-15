@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET_KEY, REFRESH_TOKEN_EXPIRATION_TIME, ACCESS_TOKEN_EXPIRATION_TIME} = require('./constants');
-const redisClient = require('./redis');
+const {setValueToRedis} = require('./redis');
 
 /**
  * Generate JSON Web Token for user authentication
@@ -50,7 +50,7 @@ const generateRefreshToken = ({user_id, user_name, user_email}) => {
     const refreshToken = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: REFRESH_TOKEN_EXPIRATION_TIME });
   
     // Store the refresh token in Redis using the user ID as the key
-    redisClient.set(`refresh_token_${user_id}`, refreshToken);
+    setValueToRedis({key: `refresh_token_${user_id}`, value: refreshToken, timeType: 'EX', time: REFRESH_TOKEN_EXPIRATION_TIME});
     // Return the generated refresh token
     return refreshToken;
 }
