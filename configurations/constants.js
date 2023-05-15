@@ -24,4 +24,3 @@ module.exports = {
   REDIS_CLIENT_URL,
   SERVER_PORT
 };
-// mongodb://saleem_chat_app:password@localhost:27017/?authMechanism=DEFAULT&authSource=chat_app
