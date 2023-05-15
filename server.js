@@ -86,4 +86,4 @@ mongoose.connect(
  * @typedef {Object} ExpressApp
  * @property {function} listen - Starts the server and listens for requests on a specified port
  */
-app.listen(SERVER_PORT, () => console.log(`Server up and running on port ${SERVER_PORT} !`));
+app.listen(SERVER_PORT, () => console.log(`Server up and running on ${process.env.APP_URL}:${SERVER_PORT} !`));
