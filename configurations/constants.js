@@ -6,9 +6,9 @@
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'secret';
 const ACCESS_TOKEN_EXPIRATION_TIME = process.env.ACCESS_TOKEN_EXPIRATION_TIME || '5m';
 const REFRESH_TOKEN_EXPIRATION_TIME = process.env.REFRESH_TOKEN_EXPIRATION_TIME || '1d';
-let MONGO_URI ; // = `${process.env.DATABASE_CONNECTION}://${process.env.DATABASE_HOST}:${process.env.DATABASE_PORT}/${process.env.DATABASE_NAME}` || 'mongodb://127.0.0.1:27017/chat_app';
 const REDIS_CLIENT_URL = `${process.env.CACHE_DRIVER}://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}` || 'redis://127.0.0.1:6379';
 const SERVER_PORT = process.env.SERVER_PORT || 5000;
+let MONGO_URI;
 
 
 if(process.env.DATABASE_USER ==='' || process.env.DATABASE_PASS ===''){
