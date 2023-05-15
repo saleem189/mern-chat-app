@@ -12,7 +12,10 @@ const RedisClient = redis.createClient({
 
 // Log error if Redis client encounters an error
 RedisClient.on('error', err => console.log('Redis Client Error', err));
-
+RedisClient.on('connect', () => console.log('Redis Connected'));
+RedisClient.on('ready', () => console.log('Redis Client connected and ready to use')); 
+RedisClient.on('end', () => console.log('Redis Client disconnected from Redis'));  
+process.on('SIGINT', () => RedisClient.quit());
 /**
  * Sets a value to Redis.
  * @param {Object} options - The options object.
@@ -21,9 +24,15 @@ RedisClient.on('error', err => console.log('Redis Client Error', err));
  * @param {string} options.timeType - The time type.
  * @param {number} options.time - The time value.
  */
-const setValueToRedis = async ({ key, value, timeType, time }) => {
+const setValueToRedis = async ({ key, value ,timeType ,time}) => {
   // Set the value to Redis
-  await RedisClient.set(key, value, timeType, time);
+  return await RedisClient.set(key, value, timeType, time, (err, reply) => {
+    if(err) {
+      return err; //reject(res.status(500).json({status:false, message: err.message})) return; only when used in promises
+    }else{
+      return reply;
+    }
+  });
 }
 
 /**
@@ -37,7 +46,8 @@ const setValueToRedis = async ({ key, value, timeType, time }) => {
  */
 const getValueFromRedis = async ({ key }) => {
   // Call the Redis client's get method with the given key and return the result
-  return await RedisClient.get(key);
+   const value = await RedisClient.get(key);
+   return value;
 }
 
 

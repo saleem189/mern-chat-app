@@ -1,7 +1,7 @@
 // Load User model
 const User = require("../Models/User");
 const bcrypt = require("bcryptjs");
-const {generateJsonWebToken} = require("../configurations/jsonWebToken");
+const {generateJsonWebToken, generateRefreshToken} = require("../configurations/jsonWebToken");
 
 
 /**
@@ -47,8 +47,14 @@ const loginUser = ({email: email, password: password}, res) => {
  * @param {object} res - The response object
  */
 const comparePassword = ({password, hash, user}, res) => {
-    bcrypt.compare(password, hash).then(isMatch => {
-        isMatch ? generateJsonWebToken({user_id: user._id, user_name: user.name, user_email: user.email}, res) : res.status(400).json({passwordincorrect: "Password incorrect"});
+    bcrypt.compare(password, hash).then( async (isMatch) => {
+       if(isMatch){
+           const accessToken = await generateJsonWebToken({user_id: user._id, user_name: user.name, user_email: user.email}, res);
+           const refreshToken = await generateRefreshToken({user_id: user._id, user_name: user.name, user_email: user.email}); 
+           return res.status(200).json({status:true, accessToken, refreshToken});
+       }else{
+           res.status(400).json({passwordincorrect: "Password incorrect"});
+       }
     });
 }
 
@@ -83,4 +89,18 @@ const createUser = (userDetails, res) =>{
     });
 }
 
-module.exports = {checkUser, loginUser};
+const refreshToken = async ({token}, res) => {
+    try {
+        const {refreshToken} = req.body;
+        if(!refreshToken) res.status(401).json({status:false, message: 'No refresh token found' });
+        const user_obj = await verifyRefreshToken(refreshToken, res);
+        const accessToken = await generateJsonWebToken({user_id: user_obj.id, user_email: user_obj.email, user_name: user_obj.name});
+        const refToken = await generateRefreshToken({user_id: user_obj.id, user_email: user_obj.email, user_name: user_obj.name});
+        return res.json({status:true, user:user_obj, accessToken, refToken});
+    } catch (error) {
+        next(error);
+    }
+
+}
+
+module.exports = {checkUser, loginUser , refreshToken};

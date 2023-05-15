@@ -7,6 +7,8 @@ const authLimiter = require("../Middlewares/reate_limiter");
 const isAuthenticated = require("../Middlewares/is_auth_middleware");
 const passport = require("passport");
 const logger = require("../Middlewares/auth_middleware");
+const { verifyRefreshToken, generateJsonWebToken, generateRefreshToken } = require("../configurations/jsonWebToken");
+const { RedisClient } = require("../configurations/redis");
 
 /**
  * Auth Routes with Rate Limitter middleware
@@ -59,5 +61,19 @@ router.get('/me', isAuthenticated, (req, res) => {
 //         res.status(200).json({status:true, user:req.user});
 //     }
 // );
+
+router.post('/refresh-token',async (req, res, next) => {
+    try {
+        const {refreshToken} = req.body;
+        if(!refreshToken) res.status(401).json({status:false, message: 'No refresh token found' });
+        const user_obj = await verifyRefreshToken(refreshToken, res);
+        const accessToken = await generateJsonWebToken({user_id: user_obj.id, user_email: user_obj.email, user_name: user_obj.name});
+        const refToken = await generateRefreshToken({user_id: user_obj.id, user_email: user_obj.email, user_name: user_obj.name});
+        return res.json({status:true, user:user_obj, accessToken, refToken});
+    } catch (error) {
+        next(error);
+    }
+
+});
 
 module.exports = router;

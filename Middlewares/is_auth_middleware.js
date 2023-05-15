@@ -6,8 +6,10 @@ const {verifyToken} = require('../configurations/jsonWebToken');
  * @param {Object} res - The response object
  * @param {Function} next - The next middleware function
  */
-const isAuthenticated = (req, res, next) => {
-  // Get the JWT from the Authorization header
+const isAuthenticated = async(req, res, next) => {
+
+  try {
+    // Get the JWT from the Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res.status(401).json({status:false, message: 'Authorization header missing' });
@@ -20,9 +22,12 @@ const isAuthenticated = (req, res, next) => {
   }
 
   // Verify the JWT
-    req.user = verifyToken(token,res);
+    req.user = await verifyToken(token,res);
     next();
-  
+    
+  } catch (error) {
+    next(error)
+  }  
 };
 
 module.exports = isAuthenticated;

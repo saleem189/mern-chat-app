@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET_KEY, REFRESH_TOKEN_EXPIRATION_TIME, ACCESS_TOKEN_EXPIRATION_TIME} = require('./constants');
-const {setValueToRedis} = require('./redis');
+const { JWT_SECRET_KEY, JWT_REFRESH_SECRET_KEY, REFRESH_TOKEN_EXPIRATION_TIME, ACCESS_TOKEN_EXPIRATION_TIME} = require('./constants');
+const {setValueToRedis, getValueFromRedis} = require('./redis');
 
 /**
  * Generate JSON Web Token for user authentication
@@ -15,21 +15,18 @@ const generateJsonWebToken = ({user_id, user_name, user_email}, res) => {
         name: user_name,
         email:user_email
     }
-  const refreshToken = generateRefreshToken({user_id:user_id, user_name:user_name, user_email:user_email});  
     // sign the payload with JSON Web Token Secret, and expiration time
-    jwt.sign(payload ,JWT_SECRET_KEY,{ expiresIn: ACCESS_TOKEN_EXPIRATION_TIME }, (err, token) => {
-        // if there is an error, send 500 status with error message
-        if (err) {
-            return res.status(500).json({status:false, message: err.message});
-        } else {
-            // send 200 status with token in Bearer format
-            return res.status(200).json({
-                    status:true,
-                    refresh_token: refreshToken,
-                    token: "Bearer " + token
-            });
-        }
-    })
+   return new Promise ((resolve, reject) => {
+        jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: ACCESS_TOKEN_EXPIRATION_TIME }, (err, token) => {
+            // if there is an error, reject the promise with the error message
+            if (err) {
+             reject(res.status(500).json({status:false, message: err.message}));
+            } else {
+            // resolve the promise with the token value
+             resolve(token);
+            }
+        });
+   });
 }
 
 
@@ -47,12 +44,19 @@ const generateRefreshToken = ({user_id, user_name, user_email}) => {
     }
 
     // Generate the refresh token using the user object, JWT secret key, and expiration time
-    const refreshToken = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: REFRESH_TOKEN_EXPIRATION_TIME });
-  
-    // Store the refresh token in Redis using the user ID as the key
-    setValueToRedis({key: `refresh_token_${user_id}`, value: refreshToken, timeType: 'EX', time: REFRESH_TOKEN_EXPIRATION_TIME});
-    // Return the generated refresh token
-    return refreshToken;
+    return new Promise ((resolve, reject) => {
+        jwt.sign(payload, JWT_REFRESH_SECRET_KEY, { expiresIn: REFRESH_TOKEN_EXPIRATION_TIME }, async(err, token) => {
+            // if there is an error, reject the promise with the error message
+            if (err) {
+                reject(res.status(500).json({status:false, message: err.message}));
+            } 
+                // resolve the promise with the token value
+                const r = await setValueToRedis({key: `refresh_token_${user_id}`, value: token , timeType: 'EX', time: REFRESH_TOKEN_EXPIRATION_TIME});
+                console.log(r)
+                resolve(token);
+            
+        });
+   });
 }
 
 
@@ -62,17 +66,35 @@ const generateRefreshToken = ({user_id, user_name, user_email}) => {
 * @returns {Object} - The decoded token.
 */
 const verifyToken = (token, res) => {
-    // Verify the JWT with the secret key
-    const decoded = jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
-        // If there's an error, return an error response
-        if (err) {
-          return res.status(401).json({ status:false, message: err.message });
-        }
-        // If the JWT is valid, return the decoded token
-        return decoded;
+    return new Promise ((resolve, reject) => {
+        jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
+            // If there's an error, return an error response
+            if (err) {
+              reject(res.status(401).json({ status:false, message: err.message }));
+            }
+            // If the JWT is valid, return the decoded token
+            resolve(decoded);
+        });
     });
-    
-    return decoded;
 }
 
-module.exports = {generateJsonWebToken, generateRefreshToken, verifyToken};
+const verifyRefreshToken = (refreshToken, res) => {
+    return new Promise ((resolve, reject) => {
+        jwt.verify(refreshToken, JWT_REFRESH_SECRET_KEY, async(err, decoded) => {
+            // If there's an error, return an error response
+            if (err) {
+              reject(res.status(401).json({ status:false, message: err.message }));
+            }
+            // console.log(decoded);
+            const result = await getValueFromRedis({ key: `refresh_token_${decoded.id}` });
+            
+            if(refreshToken === result){
+                resolve(decoded); 
+            }else{
+                reject(res.status(500).json({ status:false, message: 'internal server error' }));
+            }
+        });
+    });
+}
+
+module.exports = {generateJsonWebToken, generateRefreshToken, verifyToken, verifyRefreshToken};
