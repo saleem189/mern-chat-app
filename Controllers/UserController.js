@@ -1,7 +1,8 @@
 // Load User model
 const User = require("../Models/User");
 const bcrypt = require("bcryptjs");
-const {generateJsonWebToken, generateRefreshToken} = require("../configurations/jsonWebToken");
+const {generateJsonWebToken, generateRefreshToken, verifyRefreshToken} = require("../configurations/jsonWebToken");
+const { delValueFromRedis } = require("../configurations/redis");
 
 
 /**
@@ -103,4 +104,18 @@ const refreshToken = async ({token}, res) => {
 
 }
 
-module.exports = {checkUser, loginUser , refreshToken};
+module.exports = {checkUser, loginUser , refreshToken,
+logOut:  async(req, res, next)=>{
+    try {
+        const {refreshToken} = req.body;
+        if(!refreshToken) res.status(401).json({status:false, message: 'No refresh token found' });
+        const user_obj = await verifyRefreshToken(refreshToken, res);
+        delValueFromRedis({key:`refresh_token_${user_obj.id}`});
+        // RedisClient.del(`refresh_token_${user_obj.id}`);
+        return res.status(200).json({status:true, message: 'Logged out successfully'});
+
+    } catch (error) {
+        next(error);
+    }
+  
+}};

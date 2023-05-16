@@ -3,6 +3,7 @@ const router = express.Router();
 const LoginValidator = require("../Validations/LoginValidator");
 const RegisterValidator = require("../Validations/RegisterValidator");
 const {checkUser, loginUser} = require("../Controllers/UserController");
+const userController = require("../Controllers/UserController");
 const authLimiter = require("../Middlewares/reate_limiter");
 const isAuthenticated = require("../Middlewares/is_auth_middleware");
 const passport = require("passport");
@@ -38,20 +39,20 @@ router.post('/register', (req, res) => {
     }
 });
 
-router.post('/logout',passport.authenticate('jwt', { session: false }), (req, res, next)=>{
-    req.logout((err)=>{
-      if (err) { 
-        return next(err);
-      }
-      return res.status(200).json({
-          status: true,
-          message: 'Successfully logged out',
-          cookie: req.cookies,
-          session:req.sessionID,
-          passport:req.user
-      });
-    });
-});
+// router.delete('/logout', async(req, res, next)=>{
+//     try {
+//         const {refreshToken} = req.body;
+//         if(!refreshToken) res.status(401).json({status:false, message: 'No refresh token found' });
+//         const user_obj = await verifyRefreshToken(refreshToken, res);
+//         RedisClient.del(`refresh_token_${user_obj.id}`);
+//         return res.status(200).json({status:true, message: 'Logged out successfully'});
+
+//     } catch (error) {
+//         next(error);
+//     }
+  
+// });
+router.delete('/logout', userController.logOut);
 
 router.get('/me', isAuthenticated, (req, res) => {
     return res.status(200).json({status:true, user:req.user});

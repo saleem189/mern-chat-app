@@ -91,7 +91,7 @@ const verifyRefreshToken = (refreshToken, res) => {
             if(refreshToken === result){
                 resolve(decoded); 
             }else{
-                reject(res.status(500).json({ status:false, message: 'internal server error' }));
+                reject(res.status(500).json({ status:false, message: 'internal server error/ unauthorized' }));
             }
         });
     });

@@ -28,7 +28,7 @@ const setValueToRedis = async ({ key, value ,timeType ,time}) => {
   // Set the value to Redis
   return await RedisClient.set(key, value, timeType, time, (err, reply) => {
     if(err) {
-      return err; //reject(res.status(500).json({status:false, message: err.message})) return; only when used in promises
+      throw err; //reject(res.status(500).json({status:false, message: err.message})) return; only when used in promises
     }else{
       return reply;
     }
@@ -50,6 +50,10 @@ const getValueFromRedis = async ({ key }) => {
    return value;
 }
 
+const delValueFromRedis = async ({ key }) => {
+  await RedisClient.del(key);
+}
 
 
-module.exports = {RedisClient, setValueToRedis, getValueFromRedis};
+
+module.exports = {RedisClient, setValueToRedis, getValueFromRedis, delValueFromRedis};
