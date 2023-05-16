@@ -7,6 +7,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 require('dotenv').config()
 const api_routes = require("./Routes/auth_routes");
+const chat_routes = require("./Routes/chat_routes")
 const { MONGO_URI, SERVER_PORT } = require("./configurations/constants");
 const redisClient = require("./configurations/redis").RedisClient;
 const app = express();
@@ -64,6 +65,8 @@ redisClient.connect();
  * @param {object} routes - The API routes to mount.
  */
 app.use('/api/users', api_routes);
+
+app.use('/api/chats', chat_routes);
 
 
 /**
