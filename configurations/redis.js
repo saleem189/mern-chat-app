@@ -50,10 +50,12 @@ const getValueFromRedis = async ({ key }) => {
    return value;
 }
 
+/**
+ * Deletes a value from Redis cache based on the provided key
+ * @param {{ key: string }} param - An object containing the key to be deleted
+ */
 const delValueFromRedis = async ({ key }) => {
-  await RedisClient.del(key);
+  await RedisClient.del(key); // Delete the value associated with the provided key
 }
-
-
 
 module.exports = {RedisClient, setValueToRedis, getValueFromRedis, delValueFromRedis};

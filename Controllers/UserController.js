@@ -29,7 +29,8 @@ const checkUser = ({email: email, password: password , name: name}, res) => {
  * @param {Object} userDetails - An object containing the email and password of the user to be logged in.
  * @param {Object} res - The response object used to send the result of the login request.
  */
-const loginUser = ({email: email, password: password}, res) => {
+const loginUser = (req, res, next) => {
+    const {email, password} = req.body;
     // Find the user with the given email
     User.findOne({email:email}).then(user => {
         // If the user does not exist, return an error
@@ -90,7 +91,14 @@ const createUser = (userDetails, res) =>{
     });
 }
 
-const refreshToken = async ({token}, res) => {
+/**
+ * Refreshes access token and generates new refresh token
+ * @param {Object} req - request object containing refreshToken
+ * @param {Object} res - response object
+ * @param {Function} next - next middleware function
+ * @returns {Object} - json object containing status, user object, access token, and refresh token
+ */
+const refreshToken = async (req,res, next) => {
     try {
         const {refreshToken} = req.body;
         if(!refreshToken) res.status(401).json({status:false, message: 'No refresh token found' });
@@ -104,18 +112,50 @@ const refreshToken = async ({token}, res) => {
 
 }
 
-module.exports = {checkUser, loginUser , refreshToken,
-logOut:  async(req, res, next)=>{
+/**
+ * Logs out a user by deleting their refresh token from Redis.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @returns {Object} - The response object containing a status and message.
+ */
+const logOut = async (req, res, next) => {
     try {
-        const {refreshToken} = req.body;
-        if(!refreshToken) res.status(401).json({status:false, message: 'No refresh token found' });
-        const user_obj = await verifyRefreshToken(refreshToken, res);
-        delValueFromRedis({key:`refresh_token_${user_obj.id}`});
-        // RedisClient.del(`refresh_token_${user_obj.id}`);
-        return res.status(200).json({status:true, message: 'Logged out successfully'});
-
-    } catch (error) {
-        next(error);
-    }
+      const { refreshToken } = req.body;
   
-}};
+      // If there's no refresh token, return an error response
+      (!refreshToken) ? res.status(401).json({ status: false, message: 'No refresh token found' }):null;
+  
+      // Verify the refresh token and get the user object
+      const user_obj = await verifyRefreshToken(refreshToken, res);
+  
+      // Delete the refresh token from Redis
+      delValueFromRedis({ key: `refresh_token_${user_obj.id}` });
+
+      // Return a success response
+      return res.status(200).json({ status: true, message: 'Logged out successfully' });
+    } catch (error) {
+      // Call the error handling middleware
+      next(error);
+    }
+};
+  
+
+module.exports = {checkUser, loginUser , refreshToken, logOut
+// logOut:  async(req, res, next)=>{
+//     try {
+//         const {refreshToken} = req.body;
+//         if(!refreshToken) res.status(401).json({status:false, message: 'No refresh token found' });
+//         const user_obj = await verifyRefreshToken(refreshToken, res);
+//         delValueFromRedis({key:`refresh_token_${user_obj.id}`});
+//         // RedisClient.del(`refresh_token_${user_obj.id}`);
+//         return res.status(200).json({status:true, message: 'Logged out successfully'});
+
+//     } catch (error) {
+//         next(error);
+//     }
+  
+// }
+
+};
