@@ -32,9 +32,9 @@ const checkUser = ({email: email, password: password , name: name}, res) => {
 const loginUser = (req, res, next) => {
     const {email, password} = req.body;
     // Find the user with the given email
-    User.findOne({email:email}).then(user => {
+    User.findOneAndUpdate({email:email}).then(user => {
         // If the user does not exist, return an error
-        (!user) ? res.status(400).json({emailnotfound: "Email does not exist"}) :
+        (!user) ? res.status(400).json({emailnotfound: "Email does not exist"}): null;
         // Otherwise, compare the provided password with the user's password
         comparePassword({password:password, hash:user.password, user:user}, res);
     });
@@ -51,9 +51,11 @@ const loginUser = (req, res, next) => {
 const comparePassword = ({password, hash, user}, res) => {
     bcrypt.compare(password, hash).then( async (isMatch) => {
        if(isMatch){
-           const accessToken = await generateJsonWebToken({user_id: user._id, user_name: user.name, user_email: user.email}, res);
-           const refreshToken = await generateRefreshToken({user_id: user._id, user_name: user.name, user_email: user.email}); 
-           return res.status(200).json({status:true, accessToken, refreshToken});
+            user.isActive = true;
+            user.save();
+            const accessToken = await generateJsonWebToken({user_id: user._id, user_name: user.name, user_email: user.email , user_isActive: user.isActive}, res);
+            const refreshToken = await generateRefreshToken({user_id: user._id, user_name: user.name, user_email: user.email, user_isActive: user.isActive}); 
+            return res.status(200).json({status:true, accessToken, refreshToken});
        }else{
            res.status(400).json({passwordincorrect: "Password incorrect"});
        }
@@ -129,6 +131,10 @@ const logOut = async (req, res, next) => {
   
       // Verify the refresh token and get the user object
       const user_obj = await verifyRefreshToken(refreshToken, res);
+      User.findByIdAndUpdate(user_obj.id).then(user => {
+          user.isActive = false;
+          user.save();
+      });
   
       // Delete the refresh token from Redis
       delValueFromRedis({ key: `refresh_token_${user_obj.id}` });

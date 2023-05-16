@@ -19,6 +19,11 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
+  isActive: {
+    type: Boolean,
+    default: false
+    
+  }
 }, { 
   // Add timestamps to the schema
   timestamps: true

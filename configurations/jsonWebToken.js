@@ -8,12 +8,13 @@ const {setValueToRedis, getValueFromRedis} = require('./redis');
  * @param {Object} res - The response object to send the token or error
  * @returns {Promise<string>} - A promise that resolves with the token string or rejects with an error message
  */
-const generateJsonWebToken = ({user_id, user_name, user_email}, res) => {
+const generateJsonWebToken = ({user_id, user_name, user_email, user_isActive}, res) => {
     // create payload for JWT containing user_id, user_name, user_email
     const payload = {
         id: user_id,
         name: user_name,
-        email:user_email
+        email:user_email,
+        isActive: user_isActive
     };
 
     /**
@@ -41,12 +42,13 @@ const generateJsonWebToken = ({user_id, user_name, user_email}, res) => {
  * @param {Object} user - The user object to sign the token with. Must contain user_id, user_name, and user_email properties.
  * @returns {string} - The generated refresh token
  */
-const generateRefreshToken = ({user_id, user_name, user_email}) => {
+const generateRefreshToken = ({user_id, user_name, user_email , user_isActive}) => {
     // create payload for JWT containing user_id, user_name, user_email
     const payload = {
         id: user_id,
         name: user_name,
-        email:user_email
+        email:user_email,
+        isActive:user_isActive
     }
 
     // Generate the refresh token using the user object, JWT secret key, and expiration time
