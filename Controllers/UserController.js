@@ -32,9 +32,9 @@ const checkUser = ({email: email, password: password , name: name}, res) => {
 const loginUser = (req, res, next) => {
     const {email, password} = req.body;
     // Find the user with the given email
-    User.findOneAndUpdate({email:email}).then(user => {
+    User.findOne({email:email}).then(user => {
         // If the user does not exist, return an error
-        (!user) ? res.status(400).json({emailnotfound: "Email does not exist"}): null;
+        if (!user) return res.status(400).json({emailnotfound: "Email does not exist"});
         // Otherwise, compare the provided password with the user's password
         comparePassword({password:password, hash:user.password, user:user}, res);
     });
