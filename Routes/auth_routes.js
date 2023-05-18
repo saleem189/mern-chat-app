@@ -57,6 +57,7 @@ router.delete('/logout', logOut);
 
 router.get('/me', isAuthenticated, (req, res) => {
     return res.status(200).json({status:true, user:req.user});
+    // return res.json({req});
 })
 
 // router.get('/me', passport.authenticate('jwt', { session: false }),(req, res)=>{

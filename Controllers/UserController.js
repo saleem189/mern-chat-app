@@ -34,7 +34,7 @@ const loginUser = (req, res, next) => {
     // Find the user with the given email
     User.findOne({email:email}).then(user => {
         // If the user does not exist, return an error
-        if (!user) return res.status(400).json({emailnotfound: "Email does not exist"});
+        if (!user) return res.status(404).json({emailnotfound: "Email does not exist!"});
         // Otherwise, compare the provided password with the user's password
         comparePassword({password:password, hash:user.password, user:user}, res);
     });
@@ -107,7 +107,7 @@ const refreshToken = async (req,res, next) => {
         const user_obj = await verifyRefreshToken(refreshToken, res);
         const accessToken = await generateJsonWebToken({user_id: user_obj.id, user_email: user_obj.email, user_name: user_obj.name});
         const refToken = await generateRefreshToken({user_id: user_obj.id, user_email: user_obj.email, user_name: user_obj.name});
-        return res.json({status:true, user:user_obj, accessToken, refToken});
+        return res.json({status:true, accessToken, refToken});
     } catch (error) {
         next(error);
     }

@@ -73,13 +73,13 @@ const generateRefreshToken = ({user_id, user_name, user_email , user_isActive}) 
  * @param {Object} res - The response object for error handling.
  * @returns {Promise<Object>} - A promise that resolves to the decoded token if it's valid, or rejects with an error response if it's not.
  */
-const verifyToken = (token, res) => {
+const verifyToken = (token) => {
     return new Promise((resolve, reject) => {
       // Verify the token using the JWT_SECRET_KEY
       jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
         // If there's an error, return an error response
         if (err) {
-          reject(res.status(401).json({ status: false, message: err.message }));
+          reject(err);
         }
         // If the JWT is valid, return the decoded token
         resolve(decoded);
@@ -100,7 +100,7 @@ const verifyRefreshToken = (refreshToken, res) => {
       jwt.verify(refreshToken, JWT_REFRESH_SECRET_KEY, async (err, decoded) => {
         // If there's an error, reject the Promise with an error response
         if (err) {
-          reject(res.status(401).json({ status: false, message: err.message }));
+          reject(res.status(401).json({ status: false, message: err }));
         }
   
         // Get the stored refresh token from Redis
