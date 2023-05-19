@@ -3,6 +3,8 @@ const User = require("../Models/User");
 const bcrypt = require("bcryptjs");
 const {generateJsonWebToken, generateRefreshToken, verifyRefreshToken} = require("../configurations/jsonWebToken");
 const { delValueFromRedis } = require("../configurations/redis");
+// const { restart } = require("nodemon");
+// const User = require("../Models/User");
 
 
 /**
@@ -76,20 +78,36 @@ const createUser = (userDetails, res) =>{
         password: userDetails.password
     });
 
-    // Hash password before saving in database
-    bcrypt.genSalt(10, (err, salt) => {
-        bcrypt.hash(newUser.password, salt, (err, hash) => {
-            if (err) throw err;
-
-            // Set user's password to the hashed value
-            newUser.password = hash;
-
-            // Save user to the database
-            newUser
-                .save()
+    const encryptedPassword = encryptPassword(newUser.password);
+    newUser.password = encryptedPassword;
+    newUser.save()
                 .then(user => res.status(201).json({status:true, user:user}))
                 .catch(err => res.status(500).json(err));
-        });
+
+
+    // Hash password before saving in database
+    // bcrypt.genSalt(10, (err, salt) => {
+    //     bcrypt.hash(newUser.password, salt, (err, hash) => {
+    //         if (err) throw err;
+
+    //         // Set user's password to the hashed value
+    //         newUser.password = hash;
+
+    //         // Save user to the database
+    //         newUser
+    //             .save()
+    //             .then(user => res.status(201).json({status:true, user:user}))
+    //             .catch(err => res.status(500).json(err));
+    //     });
+    // });
+}
+
+const encryptPassword = (password) => {
+    bcryptx.genSalt(10, (err, salt) => {
+        bcryptx.hash(password, salt, (err, hash) => {
+            if (err) throw err;
+            return hash;
+        })
     });
 }
 
@@ -130,25 +148,39 @@ const logOut = async (req, res, next) => {
       (!refreshToken) ? res.status(401).json({ status: false, message: 'No refresh token found' }):null;
   
       // Verify the refresh token and get the user object
-      const user_obj = await verifyRefreshToken(refreshToken, res);
-      User.findByIdAndUpdate(user_obj.id).then(user => {
-          user.isActive = false;
-          user.save();
-      });
+       const user_obj= await verifyRefreshToken(refreshToken, res);
+        User.findByIdAndUpdate(user_obj.id, { isActive: false }, { new: true }).then(user => {
+            // user.isActive = false;
+            // user.save();
+            return user;
+        });
   
       // Delete the refresh token from Redis
       delValueFromRedis({ key: `refresh_token_${user_obj.id}` });
-
       // Return a success response
       return res.status(200).json({ status: true, message: 'Logged out successfully' });
-    } catch (error) {
-      // Call the error handling middleware
-      next(error);
+
+    } catch (error) { //jwt error
+        return res.status(403).json({error});
     }
 };
+
+const editUser = (req, res, next) => {
+        const {name, email, password} = req.body;
+        const payLoad = {
+            name:name,
+            email:email,
+            password:encryptPassword(password)
+        }
+        const userId = req.params.id;
+
+         User.findByIdAndUpdate(userId,payLoad, { new: true }).then(user => {
+           return res.status(200).json({status:true, user:user});
+         }).catch(err => res.status(500).json(err));
+}
   
 
-module.exports = {checkUser, loginUser , refreshToken, logOut
+module.exports = {checkUser, loginUser , refreshToken, logOut , editUser
 // logOut:  async(req, res, next)=>{
 //     try {
 //         const {refreshToken} = req.body;

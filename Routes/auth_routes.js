@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const LoginValidator = require("../Validations/LoginValidator");
 const RegisterValidator = require("../Validations/RegisterValidator");
-const {checkUser, loginUser , logOut, refreshToken} = require("../Controllers/UserController");
+const {checkUser, loginUser , logOut, refreshToken, editUser} = require("../Controllers/UserController");
 const userController = require("../Controllers/UserController");
 const authLimiter = require("../Middlewares/reate_limiter");
 const isAuthenticated = require("../Middlewares/is_auth_middleware");
@@ -53,7 +53,7 @@ router.post('/register', (req, res) => {
 //     }
   
 // });
-router.delete('/logout', logOut);
+router.post('/logout', logOut);
 
 router.get('/me', isAuthenticated, (req, res) => {
     return res.status(200).json({status:true, user:req.user});
@@ -64,6 +64,8 @@ router.get('/me', isAuthenticated, (req, res) => {
 //         res.status(200).json({status:true, user:req.user});
 //     }
 // );
+
+router.post('/edit/:id', isAuthenticated, editUser)
 
 router.post('/refresh-token', refreshToken);
 

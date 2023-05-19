@@ -99,19 +99,20 @@ const verifyRefreshToken = (refreshToken, res) => {
       // Verify the refresh token using the JWT_REFRESH_SECRET_KEY
       jwt.verify(refreshToken, JWT_REFRESH_SECRET_KEY, async (err, decoded) => {
         // If there's an error, reject the Promise with an error response
-        if (err) {
-          reject(res.status(401).json({ status: false, message: err }));
-        }
-  
-        // Get the stored refresh token from Redis
-        const result = await getValueFromRedis({ key: `refresh_token_${decoded.id}` });
-  
-        // If the provided refresh token matches the stored refresh token, resolve the Promise with the decoded payload
-        if (refreshToken === result) {
-          resolve(decoded);
-        } else {
-          // Otherwise, reject the Promise with an error response
-          reject(res.status(500).json({ status: false, message: 'internal server error/ unauthorized' }));
+        // console.log(decoded);
+        if(decoded){
+           // Get the stored refresh token from Redis
+           const result = await getValueFromRedis({ key: `refresh_token_${decoded.id}` });
+    
+           // If the provided refresh token matches the stored refresh token, resolve the Promise with the decoded payload
+           if (refreshToken === result) {
+             resolve(decoded);
+           } else {
+             // Otherwise, reject the Promise with an error response
+             reject(res.status(500).json({status:false, message: 'internal server error / unothrized'}));
+           }
+        }else {
+          reject(res.status(403).json({status:false, err}));
         }
       });
     });
